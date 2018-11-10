@@ -10,6 +10,15 @@ namespace DiscordRoleManager
         private string _tokenVisibleState = "Visible";
         public string TokenVisibleState { get => _tokenVisibleState; set => SetValue(ref _tokenVisibleState, value); }
 
+        private ulong _channelId = 0;
+        public ulong ChannelId { get => _channelId; set => SetValue(ref _channelId, value); }
+
+        private string _spreadsheetId = "";
+        public string SpreadsheetId { get => _spreadsheetId; set => SetValue(ref _spreadsheetId, value); }
+
+        private string _spreadsheetMappingTab = "Mapping";
+        public string SpreadsheetMappingTab { get => _spreadsheetMappingTab; set => SetValue(ref _spreadsheetMappingTab, value); }
+
         private int _infoDelay = 5000;
         public int InfoDelay { get => _infoDelay; set => SetValue(ref _infoDelay, value); }
 
