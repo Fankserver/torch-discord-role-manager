@@ -19,6 +19,9 @@ namespace DiscordRoleManager
         private string _spreadsheetMappingTab = "Mapping";
         public string SpreadsheetMappingTab { get => _spreadsheetMappingTab; set => SetValue(ref _spreadsheetMappingTab, value); }
 
+        private bool _notifyLinkable = true;
+        public bool NotifyLinkable { get => _notifyLinkable; set => SetValue(ref _notifyLinkable, value); }
+
         private int _infoDelay = 5000;
         public int InfoDelay { get => _infoDelay; set => SetValue(ref _infoDelay, value); }
 

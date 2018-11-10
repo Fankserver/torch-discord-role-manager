@@ -60,6 +60,7 @@
 			<TextBox Width="180" Text="{Binding Rank4}" ToolTip="Role ID to assign rank 4" Margin="3" />
 			<Label Content="Rank 4 (Administrator)"/>
 		</StackPanel>
+		<CheckBox Content="Notify to link" Margin="3" IsChecked="{Binding NotifyLinkable}" />
 
 		<Label Height="20">
 			<LineBreak/>

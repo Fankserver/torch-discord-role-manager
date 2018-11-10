@@ -205,12 +205,12 @@ namespace DiscordRoleManager
 
         private void MyEntities_OnEntityAdd(VRage.Game.Entity.MyEntity obj)
         {
-            if (obj is MyCharacter character)
+            if (Config.NotifyLinkable && obj is MyCharacter character)
             {
                 Task.Run(() =>
                 {
                     Thread.Sleep(Config.InfoDelay);
-                    if (_conecting.Contains(character.ControlSteamId) && character.IsPlayer)
+                    if (Config.NotifyLinkable && _conecting.Contains(character.ControlSteamId) && character.IsPlayer)
                     {
                         _chatmanager.SendMessageAsOther("DiscordRoleManager", "Write '/link' into the chat to link your steam account with discord", MyFontEnum.White, character.ControlSteamId);
 
