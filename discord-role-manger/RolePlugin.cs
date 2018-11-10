@@ -80,6 +80,12 @@ namespace DiscordRoleManager
 
             UserCredential credential;
 
+            if (!File.Exists(Path.Combine(configPath, "credentials.json")))
+            {
+                Log.Error("No credentials.json file found");
+                return;
+            }
+
             using (var stream = new FileStream(Path.Combine(configPath, "credentials.json"), FileMode.Open, FileAccess.Read))
             {
                 string[] scopes = { SheetsService.Scope.Spreadsheets };
@@ -104,7 +110,7 @@ namespace DiscordRoleManager
 
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
-            if (Config.BotToken.Length == 0)
+            if (Config.BotToken.Length == 0 || _sheetService == null)
                 return;
 
             switch (state)
@@ -228,12 +234,12 @@ namespace DiscordRoleManager
                     {
                         Log.Info($"Linked steamid:{dict.Key} with discord:{e.Author.Username}#{e.Author.Discriminator}");
 
-                        IList<Object> obj = new List<Object>
+                        IList<object> obj = new List<object>
                         {
                             dict.Key.ToString(),
                             $"{e.Author.Username}#{e.Author.Discriminator}"
                         };
-                        IList<IList<Object>> values = new List<IList<Object>>
+                        IList<IList<object>> values = new List<IList<object>>
                         {
                             obj
                         };
