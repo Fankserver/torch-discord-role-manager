@@ -242,7 +242,7 @@ namespace DiscordRoleManager
 
                         IList<Object> obj = new List<Object>
                         {
-                            dict.Key,
+                            dict.Key.ToString(),
                             $"{e.Author.Username}#{e.Author.Discriminator}"
                         };
                         IList<IList<Object>> values = new List<IList<Object>>
