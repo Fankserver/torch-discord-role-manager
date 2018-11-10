@@ -7,6 +7,7 @@ using Google.Apis.Util.Store;
 using NLog;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Character;
+using Sandbox.Game.World;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +37,7 @@ namespace DiscordRoleManager
         private IMultiplayerManagerBase _multibase;
         private Persistent<RoleConfig> _config;
         private HashSet<ulong> _conecting = new HashSet<ulong>();
+        private HashSet<ulong> _knownPlayer = new HashSet<ulong>();
         private Dictionary<ulong, string> _linkIds = new Dictionary<ulong, string>();
         private SheetsService _sheetService;
 
@@ -166,25 +168,32 @@ namespace DiscordRoleManager
 
         private void _multibase_PlayerLeft(IPlayer obj)
         {
-            //Remove to conecting list
             _conecting.Remove(obj.SteamId);
+            _knownPlayer.Remove(obj.SteamId);
             _linkIds.Remove(obj.SteamId);
         }
 
         private void _multibase_PlayerJoined(IPlayer obj)
         {
-            //Add to conecting list
-            _conecting.Add(obj.SteamId);
+            string discordTag = GetDiscordTag(obj.SteamId).Result;
+
+            if (discordTag != null)
+                UpdatePlayerRank(obj.SteamId, discordTag);
+            else 
+                _conecting.Add(obj.SteamId);
         }
 
         private void MessageRecieved(TorchChatMessage msg, ref bool consumed)
         {
-            if (msg.AuthorSteamId.HasValue && (msg.Message == "/link" || msg.Message == "/verify"))
+            if (Config.ChannelId == 0)
+                return;
+
+            if (msg.AuthorSteamId.HasValue && !_knownPlayer.Contains(msg.AuthorSteamId.Value) && (msg.Message == "/link" || msg.Message == "/verify"))
             {
-                consumed = true;
                 var randomString = RandomString(4);
                 _linkIds.Add(msg.AuthorSteamId.Value, randomString);
-                _chatmanager.SendMessageAsOther("DiscordRoleManager", randomString, MyFontEnum.White, msg.AuthorSteamId.Value);
+                var channel = _discord.Guilds.First().Value.GetChannel(Config.ChannelId);
+                _chatmanager.SendMessageAsOther("DiscordRoleManager", $"Write '{randomString}' in the #{channel.Name} on our discord server", MyFontEnum.White, msg.AuthorSteamId.Value);
             }
         }
 
@@ -197,28 +206,7 @@ namespace DiscordRoleManager
                     Thread.Sleep(Config.InfoDelay);
                     if (_conecting.Contains(character.ControlSteamId) && character.IsPlayer)
                     {
-                        bool _foundInDB = false;
-                        SpreadsheetsResource.ValuesResource.GetRequest request = _sheetService.Spreadsheets.Values.Get(Config.SpreadsheetId, $"{Config.SpreadsheetMappingTab}!A2:B");
-                        ValueRange response = request.Execute();
-                        IList<IList<object>> values = response.Values;
-                        if (values != null && values.Count > 0)
-                        {
-                            foreach (var row in values)
-                            {
-                                Log.Info($"Check: {row[0]} {row[0]}");
-                                // Print columns A and E, which correspond to indices 0 and 4.
-                                ulong parsedSteamId;
-                                if (ulong.TryParse(row[0].ToString(), out parsedSteamId) && parsedSteamId == character.ControlSteamId)
-                                {
-                                    _foundInDB = true;
-                                    Log.Warn($"MATCH {row[0]} {row[1]}");
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!_foundInDB)
-                            _chatmanager.SendMessageAsOther("DiscordRoleManager", "Write '/link' into the chat to link your steam account with discord", MyFontEnum.White, character.ControlSteamId);
+                        _chatmanager.SendMessageAsOther("DiscordRoleManager", "Write '/link' into the chat to link your steam account with discord", MyFontEnum.White, character.ControlSteamId);
 
                         //After spawn on world, remove from connecting list
                         _conecting.Remove(character.ControlSteamId);
@@ -256,12 +244,82 @@ namespace DiscordRoleManager
 
                         _linkIds.Remove(dict.Key);
                         _chatmanager.SendMessageAsOther("DiscordRoleManager", "Link successful", MyFontEnum.White, dict.Key);
-                        break;
+
+                        return UpdatePlayerRank(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}");
                     }
                 }
             }
 
             return Task.CompletedTask;
+        }
+
+        private Task<string> GetDiscordTag(ulong steamId)
+        {
+            SpreadsheetsResource.ValuesResource.GetRequest request = _sheetService.Spreadsheets.Values.Get(Config.SpreadsheetId, $"{Config.SpreadsheetMappingTab}!A2:B");
+            ValueRange response = request.Execute();
+            IList<IList<object>> values = response.Values;
+            if (values != null && values.Count > 0)
+            {
+                foreach (var row in values)
+                {
+                    ulong parsedSteamId;
+                    if (ulong.TryParse(row[0].ToString(), out parsedSteamId) && parsedSteamId == steamId)
+                    {
+                        string discordTag = row[1].ToString();
+                        return Task.FromResult<string>(discordTag);
+                    }
+                }
+            }
+
+            return Task.FromResult<string>(null);
+        }
+
+        private Task<bool> UpdatePlayerRank(ulong steamId, string discordTag)
+        {
+            string username = "";
+            string discriminator = "";
+            int idx = discordTag.LastIndexOf('#');
+            if (idx != -1)
+            {
+                username = discordTag.Substring(0, idx);
+                discriminator = discordTag.Substring(idx + 1);
+            }
+
+            var member = _discord.Guilds.FirstOrDefault().Value.GetAllMembersAsync().Result.FirstOrDefault((x) => x.Username == username && x.Discriminator == discriminator);
+            if (member == null)
+            {
+                MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.None);
+                return Task.FromResult(false);
+            }
+
+            var promotionLevel = MySession.Static.GetUserPromoteLevel(steamId);
+
+            foreach (var role in member.Roles)
+            {
+                if (Config.Rank4 > 0 && role.Id == Config.Rank4 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Admin)
+                {
+                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Admin);
+                }
+                else if (Config.Rank3 > 0 && role.Id == Config.Rank3 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster)
+                {
+                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster);
+                }
+                else if (Config.Rank2 > 0 && role.Id == Config.Rank2 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Moderator)
+                {
+                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Moderator);
+                }
+                else if (Config.Rank1 > 0 && role.Id == Config.Rank1 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Scripter)
+                {
+                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Scripter);
+                }
+                else if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.None)
+                {
+                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.None);
+                }
+            }
+            _knownPlayer.Add(steamId);
+
+            return Task.FromResult(true);
         }
 
         private static Random random = new Random();
