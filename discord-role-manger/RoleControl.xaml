@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="DiscordRoleManager.RoleControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DiscordRoleManager"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+	<StackPanel>
+		<Label FontWeight="Bold" FontSize="16" Content="Main Config:" />
+
+		<StackPanel Orientation="Horizontal" Visibility="{Binding TokenVisibleState}">
+			<TextBox Width="420" Text="{Binding BotToken}" ToolTip="You need to create a discord bot to get the token" Margin="3"/>
+			<Label Content="Discord Bot Token"/>
+		</StackPanel>
+		<Label>
+			<TextBlock>
+                *If the token is not visible here, you need to enable or change directly on config file.
+                <LineBreak/>Change between 'Visible' and 'Collapsed'.
+			</TextBlock>
+		</Label>
+		<StackPanel Orientation="Horizontal">
+			<TextBox Width="180" Text="{Binding ChannelId}" ToolTip="Channel ID to send/receive messages from/to in-game/discord" Margin="3" />
+			<Label Content="Channel id for chat messages"/>
+		</StackPanel>
+
+		<Label Height="20">
+			<LineBreak/>
+		</Label>
+
+		<Label FontWeight="Bold" FontSize="16" Content="Ranks (higher will be used):" />
+		<StackPanel Orientation="Horizontal">
+			<TextBox Width="180" Text="{Binding Rank1}" ToolTip="Role ID to assign rank 1" Margin="3" />
+			<Label Content="Rank 1 (Scripters)"/>
+		</StackPanel>
+		<StackPanel Orientation="Horizontal">
+			<TextBox Width="180" Text="{Binding Rank2}" ToolTip="Role ID to assign rank 2" Margin="3" />
+			<Label Content="Rank 2 (Moderator)"/>
+		</StackPanel>
+		<StackPanel Orientation="Horizontal">
+			<TextBox Width="180" Text="{Binding Rank3}" ToolTip="Role ID to assign rank 3" Margin="3" />
+			<Label Content="Rank 3 (Space master)"/>
+		</StackPanel>
+		<StackPanel Orientation="Horizontal">
+			<TextBox Width="180" Text="{Binding Rank4}" ToolTip="Role ID to assign rank 4" Margin="3" />
+			<Label Content="Rank 4 (Administrator)"/>
+		</StackPanel>
+
+		<Label Height="20">
+			<LineBreak/>
+		</Label>
+
+		<Label FontWeight="Bold" FontSize="16" Content="BOT Status:" />
+		<CheckBox Content="Enable BOT Status" Margin="3" IsChecked="{Binding UseStatus}" />
+
+		<Label Height="20">
+			<LineBreak/>
+		</Label>
+		<StackPanel Orientation="Horizontal">
+			<Button Width="180" Content="Save Config" Click="SaveConfig_OnClick" Margin="3" />
+		</StackPanel>
+	</StackPanel>
+</UserControl>
