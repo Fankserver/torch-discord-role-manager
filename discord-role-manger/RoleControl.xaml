@@ -28,15 +28,15 @@
 			<LineBreak/>
 		</Label>
 
-		<Label FontWeight="Bold" FontSize="16" Content="Google Spreadsheet:" />
+		<Label FontWeight="Bold" FontSize="16" Content="Storage API:" />
 
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="420" Text="{Binding SpreadsheetId}" ToolTip="Spreadsheet Id" Margin="3"/>
-			<Label Content="Spreadsheet id"/>
+			<TextBox Width="240" Text="{Binding APIURL}" ToolTip="URL of the API server which store the information" Margin="3" />
+			<Label Content="URL"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Text="{Binding SpreadsheetMappingTab}" ToolTip="Tab which contains the mapping informations" Margin="3" />
-			<Label Content="Mapping tab"/>
+			<TextBox Width="420" Text="{Binding APIPassword}" ToolTip="Password to authenticate with the API server" Margin="3"/>
+			<Label Content="Password"/>
 		</StackPanel>
 
 		<Label Height="20">

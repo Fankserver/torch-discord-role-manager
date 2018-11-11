@@ -1,10 +1,6 @@
 ﻿using DSharpPlus;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Sheets.v4;
-using Google.Apis.Sheets.v4.Data;
-using Google.Apis.Util.Store;
 using NLog;
+using Sandbox;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Character;
 using Sandbox.Game.World;
@@ -12,8 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Script.Serialization;
 using System.Windows.Controls;
 using Torch;
 using Torch.API;
@@ -37,9 +36,8 @@ namespace DiscordRoleManager
         private IMultiplayerManagerBase _multibase;
         private Persistent<RoleConfig> _config;
         private HashSet<ulong> _conecting = new HashSet<ulong>();
-        private HashSet<ulong> _knownPlayer = new HashSet<ulong>();
         private Dictionary<ulong, string> _linkIds = new Dictionary<ulong, string>();
-        private SheetsService _sheetService;
+        private static readonly HttpClient client = new HttpClient();
 
         public readonly Logger Log = LogManager.GetCurrentClassLogger();
 
@@ -52,10 +50,7 @@ namespace DiscordRoleManager
         public override void Init(ITorchBase torch)
         {
             base.Init(torch);
-            var configPath = Path.Combine(StoragePath, "DiscordRoleManager");
-            var configFile = Path.Combine(configPath, "config.cfg");
-
-            Directory.CreateDirectory(configPath);
+            var configFile = Path.Combine(StoragePath, "DiscordRoleManager.cfg");
 
             try
             {
@@ -77,44 +72,18 @@ namespace DiscordRoleManager
                 _sessionManager.SessionStateChanged += SessionChanged;
             else
                 Log.Warn("No session manager loaded!");
-
-            UserCredential credential;
-
-            if (!File.Exists(Path.Combine(configPath, "credentials.json")))
-            {
-                Log.Error("No credentials.json file found");
-                return;
-            }
-
-            using (var stream = new FileStream(Path.Combine(configPath, "credentials.json"), FileMode.Open, FileAccess.Read))
-            {
-                string[] scopes = { SheetsService.Scope.Spreadsheets };
-                // The file token.json stores the user's access and refresh tokens, and is created
-                // automatically when the authorization flow completes for the first time.
-                string credPath = Path.Combine(configPath, "token.json");
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
-                Log.Info("Credential file saved to: " + credPath);
-            }
-
-            _sheetService = new SheetsService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "DiscordRoleManager",
-            });
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState state)
         {
-            if (Config.BotToken.Length == 0 || _sheetService == null)
+            if (Config.BotToken.Length == 0)
                 return;
 
             switch (state)
             {
+                case TorchSessionState.Loading:
+                    client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", Config.APIPassword);
+                    break;
                 case TorchSessionState.Loaded:
                     _multibase = Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>();
                     if (_multibase != null)
@@ -175,12 +144,14 @@ namespace DiscordRoleManager
         private void _multibase_PlayerLeft(IPlayer obj)
         {
             _conecting.Remove(obj.SteamId);
-            _knownPlayer.Remove(obj.SteamId);
             _linkIds.Remove(obj.SteamId);
         }
 
         private void _multibase_PlayerJoined(IPlayer obj)
         {
+            if (MySandboxGame.ConfigDedicated.Administrators.Contains(obj.SteamId.ToString()))
+                return;
+
             string discordTag = GetDiscordTag(obj.SteamId).Result;
 
             if (discordTag != null)
@@ -194,10 +165,26 @@ namespace DiscordRoleManager
             if (Config.ChannelId == 0)
                 return;
 
-            if (msg.AuthorSteamId.HasValue && !_knownPlayer.Contains(msg.AuthorSteamId.Value) && (msg.Message == "/link" || msg.Message == "/verify"))
+            if (msg.AuthorSteamId.HasValue && (msg.Message == "/link" || msg.Message == "/verify"))
             {
-                var randomString = RandomString(4);
-                _linkIds.Add(msg.AuthorSteamId.Value, randomString);
+                consumed = true;
+                var discordTag = GetDiscordTag(msg.AuthorSteamId.Value).Result;
+                if (discordTag != "")
+                {
+                    _chatmanager.SendMessageAsOther("DiscordRoleManager", $"Your account is linked to {discordTag}", MyFontEnum.Green, msg.AuthorSteamId.Value);
+                    return;
+                }
+
+                var randomString = "";
+                if (_linkIds.ContainsKey(msg.AuthorSteamId.Value))
+                {
+                    randomString = _linkIds[msg.AuthorSteamId.Value];
+                }
+                else
+                {
+                    randomString = RandomString(4);
+                    _linkIds.Add(msg.AuthorSteamId.Value, randomString);
+                }
                 var channel = _discord.Guilds.First().Value.GetChannel(Config.ChannelId);
                 _chatmanager.SendMessageAsOther("DiscordRoleManager", $"Write '{randomString}' in the #{channel.Name} on our discord server", MyFontEnum.White, msg.AuthorSteamId.Value);
             }
@@ -234,19 +221,7 @@ namespace DiscordRoleManager
                     {
                         Log.Info($"Linked steamid:{dict.Key} with discord:{e.Author.Username}#{e.Author.Discriminator}");
 
-                        IList<object> obj = new List<object>
-                        {
-                            dict.Key.ToString(),
-                            $"{e.Author.Username}#{e.Author.Discriminator}"
-                        };
-                        IList<IList<object>> values = new List<IList<object>>
-                        {
-                            obj
-                        };
-                        SpreadsheetsResource.ValuesResource.AppendRequest request = _sheetService.Spreadsheets.Values.Append(new ValueRange() { Values = values }, Config.SpreadsheetId, $"{Config.SpreadsheetMappingTab}!A2:B");
-                        request.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
-                        request.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
-                        request.Execute();
+                        AddDiscordRelation(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}");
 
                         _linkIds.Remove(dict.Key);
                         _chatmanager.SendMessageAsOther("DiscordRoleManager", "Link successful", MyFontEnum.White, dict.Key);
@@ -259,25 +234,25 @@ namespace DiscordRoleManager
             return Task.CompletedTask;
         }
 
+        private Task<bool> AddDiscordRelation(ulong steamId, string discordTag)
+        {
+            var content = new StringContent(new JavaScriptSerializer().Serialize(new AddRelationEntry
+            {
+                steam_id = steamId,
+                discord_tag = discordTag,
+            }), Encoding.UTF8, "application/json");
+            var response = client.PostAsync($"{Config.APIURL}/steamid/{steamId}", content).Result;
+            return Task.FromResult(response.IsSuccessStatusCode);
+        }
+
         private Task<string> GetDiscordTag(ulong steamId)
         {
-            SpreadsheetsResource.ValuesResource.GetRequest request = _sheetService.Spreadsheets.Values.Get(Config.SpreadsheetId, $"{Config.SpreadsheetMappingTab}!A2:B");
-            ValueRange response = request.Execute();
-            IList<IList<object>> values = response.Values;
-            if (values != null && values.Count > 0)
-            {
-                foreach (var row in values)
-                {
-                    ulong parsedSteamId;
-                    if (ulong.TryParse(row[0].ToString(), out parsedSteamId) && parsedSteamId == steamId)
-                    {
-                        string discordTag = row[1].ToString();
-                        return Task.FromResult<string>(discordTag);
-                    }
-                }
-            }
-
-            return Task.FromResult<string>(null);
+            var response = client.GetAsync($"{Config.APIURL}/steamid/{steamId}").Result;
+            var obj = new JavaScriptSerializer().Deserialize<GetDiscordTag>(response.Content.ReadAsStringAsync().Result);
+            if (obj.discord_tag != "")
+                return Task.FromResult(obj.discord_tag);
+            else
+                return Task.FromResult<string>(null);
         }
 
         private Task<bool> UpdatePlayerRank(ulong steamId, string discordTag)
@@ -323,7 +298,6 @@ namespace DiscordRoleManager
                     MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.None);
                 }
             }
-            _knownPlayer.Add(steamId);
 
             return Task.FromResult(true);
         }
@@ -335,5 +309,16 @@ namespace DiscordRoleManager
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+    }
+
+    public class GetDiscordTag
+    {
+        public string discord_tag { get; set; }
+    }
+
+    public class AddRelationEntry
+    {
+        public ulong steam_id { get; set; }
+        public string discord_tag { get; set; }
     }
 }

@@ -13,11 +13,11 @@ namespace DiscordRoleManager
         private ulong _channelId = 0;
         public ulong ChannelId { get => _channelId; set => SetValue(ref _channelId, value); }
 
-        private string _spreadsheetId = "";
-        public string SpreadsheetId { get => _spreadsheetId; set => SetValue(ref _spreadsheetId, value); }
+        private string _apiURL = "http://localhost:8080";
+        public string APIURL { get => _apiURL; set => SetValue(ref _apiURL, value); }
 
-        private string _spreadsheetMappingTab = "Mapping";
-        public string SpreadsheetMappingTab { get => _spreadsheetMappingTab; set => SetValue(ref _spreadsheetMappingTab, value); }
+        private string _apiPassword = "";
+        public string APIPassword { get => _apiPassword; set => SetValue(ref _apiPassword, value); }
 
         private bool _notifyLinkable = true;
         public bool NotifyLinkable { get => _notifyLinkable; set => SetValue(ref _notifyLinkable, value); }
