@@ -249,10 +249,7 @@ namespace DiscordRoleManager
         {
             var response = client.GetAsync($"{Config.APIURL}/steamid/{steamId}").Result;
             var obj = new JavaScriptSerializer().Deserialize<GetDiscordTag>(response.Content.ReadAsStringAsync().Result);
-            if (obj.discord_tag != "")
-                return Task.FromResult(obj.discord_tag);
-            else
-                return Task.FromResult<string>(null);
+            return Task.FromResult(obj.discord_tag);
         }
 
         private Task<bool> UpdatePlayerRank(ulong steamId, string discordTag)
