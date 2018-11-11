@@ -172,6 +172,7 @@ namespace DiscordRoleManager
                 if (discordTag != "")
                 {
                     _chatmanager.SendMessageAsOther("DiscordRoleManager", $"Your account is linked to {discordTag}", MyFontEnum.Green, msg.AuthorSteamId.Value);
+                    UpdatePlayerRank(msg.AuthorSteamId.Value, discordTag);
                     return;
                 }
 
