@@ -241,15 +241,20 @@ namespace DiscordRoleManager
                 steam_id = steamId,
                 discord_tag = discordTag,
             }), Encoding.UTF8, "application/json");
-            var response = client.PostAsync($"{Config.APIURL}/steamid/{steamId}", content).Result;
+            var response = client.PostAsync($"{Config.APIURL}/", content).Result;
             return Task.FromResult(response.IsSuccessStatusCode);
         }
 
         private Task<string> GetDiscordTag(ulong steamId)
         {
+            string discordTag = "";
             var response = client.GetAsync($"{Config.APIURL}/steamid/{steamId}").Result;
-            var obj = new JavaScriptSerializer().Deserialize<GetDiscordTag>(response.Content.ReadAsStringAsync().Result);
-            return Task.FromResult(obj.discord_tag);
+            if (response.IsSuccessStatusCode)
+            {
+                var obj = new JavaScriptSerializer().Deserialize<GetDiscordTag>(response.Content.ReadAsStringAsync().Result);
+                discordTag = obj.discord_tag;
+            }
+            return Task.FromResult(discordTag);
         }
 
         private Task<bool> UpdatePlayerRank(ulong steamId, string discordTag)
