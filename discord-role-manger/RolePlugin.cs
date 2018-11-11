@@ -221,12 +221,14 @@ namespace DiscordRoleManager
                     {
                         Log.Info($"Linked steamid:{dict.Key} with discord:{e.Author.Username}#{e.Author.Discriminator}");
 
-                        AddDiscordRelation(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}");
+                        if (AddDiscordRelation(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}").Result)
+                        {
 
-                        _linkIds.Remove(dict.Key);
-                        _chatmanager.SendMessageAsOther("DiscordRoleManager", "Link successful", MyFontEnum.White, dict.Key);
+                            _linkIds.Remove(dict.Key);
+                            _chatmanager.SendMessageAsOther("DiscordRoleManager", "Link successful", MyFontEnum.White, dict.Key);
 
-                        return UpdatePlayerRank(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}");
+                            return UpdatePlayerRank(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}");
+                        }
                     }
                 }
             }
