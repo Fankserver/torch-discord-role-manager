@@ -79,6 +79,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RoleCommands.cs" />
     <Compile Include="RoleConfig.cs" />
     <Compile Include="RoleControl.xaml.cs">
       <DependentUpon>RoleControl.xaml</DependentUpon>
@@ -93,7 +94,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="manifest.xml" />
+    <Content Include="manifest.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

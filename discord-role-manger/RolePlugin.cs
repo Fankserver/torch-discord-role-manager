@@ -19,6 +19,7 @@ using Torch.API;
 using Torch.API.Managers;
 using Torch.API.Plugins;
 using Torch.API.Session;
+using Torch.Commands;
 using Torch.Managers.ChatManager;
 using Torch.Session;
 using VRage.Game;
@@ -96,10 +97,7 @@ namespace DiscordRoleManager
                         Log.Warn("No join/leave manager loaded!");
 
                     _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
-                    if (_chatmanager != null)
-                        _chatmanager.MessageRecieved += MessageRecieved;
-
-                    else
+                    if (_chatmanager == null)
                         Log.Warn("No chat manager loaded!");
 
                     Log.Warn("Starting Discord role manager!");
@@ -120,9 +118,6 @@ namespace DiscordRoleManager
                         MyEntities.OnEntityAdd -= MyEntities_OnEntityAdd;
                         _multibase.PlayerLeft -= _multibase_PlayerLeft;
                     }
-
-                    if (_chatmanager != null)
-                        _chatmanager.MessageRecieved -= MessageRecieved;
 
                     if (_discord != null)
                         _discord.DisconnectAsync();
@@ -160,35 +155,31 @@ namespace DiscordRoleManager
                 _conecting.Add(obj.SteamId);
         }
 
-        private void MessageRecieved(TorchChatMessage msg, ref bool consumed)
+        public void CommandLink(CommandContext context, ulong steamId)
         {
             if (Config.ChannelId == 0)
                 return;
 
-            if (msg.AuthorSteamId.HasValue && (msg.Message == "/link" || msg.Message == "/verify"))
+            var discordTag = GetDiscordTag(steamId).Result;
+            if (discordTag != "")
             {
-                consumed = true;
-                var discordTag = GetDiscordTag(msg.AuthorSteamId.Value).Result;
-                if (discordTag != "")
-                {
-                    _chatmanager.SendMessageAsOther("DiscordRoleManager", $"Your account is linked to {discordTag}", MyFontEnum.Green, msg.AuthorSteamId.Value);
-                    UpdatePlayerRank(msg.AuthorSteamId.Value, discordTag);
-                    return;
-                }
-
-                var randomString = "";
-                if (_linkIds.ContainsKey(msg.AuthorSteamId.Value))
-                {
-                    randomString = _linkIds[msg.AuthorSteamId.Value];
-                }
-                else
-                {
-                    randomString = RandomString(4);
-                    _linkIds.Add(msg.AuthorSteamId.Value, randomString);
-                }
-                var channel = _discord.Guilds.First().Value.GetChannel(Config.ChannelId);
-                _chatmanager.SendMessageAsOther("DiscordRoleManager", $"Write '{randomString}' in the #{channel.Name} on our discord server", MyFontEnum.White, msg.AuthorSteamId.Value);
+                context.Respond($"Your account is linked to {discordTag}", "DiscordRoleManager", "Green");
+                UpdatePlayerRank(steamId, discordTag);
+                return;
             }
+
+            var randomString = "";
+            if (_linkIds.ContainsKey(steamId))
+            {
+                randomString = _linkIds[steamId];
+            }
+            else
+            {
+                randomString = RandomString(4);
+                _linkIds.Add(steamId, randomString);
+            }
+            var channel = _discord.Guilds.First().Value.GetChannel(Config.ChannelId);
+            context.Respond($"Write '{randomString}' in the #{channel.Name} on our discord server", "DiscordRoleManager", "White");
         }
 
         private void MyEntities_OnEntityAdd(VRage.Game.Entity.MyEntity obj)
@@ -200,7 +191,7 @@ namespace DiscordRoleManager
                     Thread.Sleep(Config.InfoDelay);
                     if (Config.NotifyLinkable && _conecting.Contains(character.ControlSteamId) && character.IsPlayer)
                     {
-                        _chatmanager.SendMessageAsOther("DiscordRoleManager", "Write '/link' into the chat to link your steam account with discord", MyFontEnum.White, character.ControlSteamId);
+                        _chatmanager.SendMessageAsOther("DiscordRoleManager", "Write '!link' into the chat to link your steam account with discord", MyFontEnum.White, character.ControlSteamId);
 
                         //After spawn on world, remove from connecting list
                         _conecting.Remove(character.ControlSteamId);
