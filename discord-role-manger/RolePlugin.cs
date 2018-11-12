@@ -73,6 +73,14 @@ namespace DiscordRoleManager
                 _sessionManager.SessionStateChanged += SessionChanged;
             else
                 Log.Warn("No session manager loaded!");
+
+            _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
+            if (_chatmanager == null)
+                Log.Warn("No chat manager loaded!");
+
+            _multibase = Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>();
+            if (_multibase == null)
+                Log.Warn("No join/leave manager loaded!");
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -84,23 +92,6 @@ namespace DiscordRoleManager
             {
                 case TorchSessionState.Loading:
                     client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", Config.APIPassword);
-                    break;
-                case TorchSessionState.Loaded:
-                    _multibase = Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>();
-                    if (_multibase != null)
-                    {
-                        _multibase.PlayerJoined += _multibase_PlayerJoined;
-                        MyEntities.OnEntityAdd += MyEntities_OnEntityAdd;
-                        _multibase.PlayerLeft += _multibase_PlayerLeft;
-                    }
-                    else
-                        Log.Warn("No join/leave manager loaded!");
-
-                    _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
-                    if (_chatmanager == null)
-                        Log.Warn("No chat manager loaded!");
-
-                    Log.Warn("Starting Discord role manager!");
 
                     _discord = new DiscordClient(new DiscordConfiguration
                     {
@@ -109,6 +100,15 @@ namespace DiscordRoleManager
                     });
                     _discord.ConnectAsync();
                     _discord.MessageCreated += Discord_MessageCreated;
+
+                    if (_multibase != null)
+                    {
+                        _multibase.PlayerJoined += _multibase_PlayerJoined;
+                        MyEntities.OnEntityAdd += MyEntities_OnEntityAdd;
+                        _multibase.PlayerLeft += _multibase_PlayerLeft;
+                    }
+
+                    Log.Warn("Starting Discord role manager!");
 
                     break;
                 case TorchSessionState.Unloading:
