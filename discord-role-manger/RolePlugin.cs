@@ -221,6 +221,10 @@ namespace DiscordRoleManager
 
                             return UpdatePlayerRank(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}");
                         }
+                        else
+                        {
+                            _chatmanager.SendMessageAsOther("DiscordRoleManager", "Link unsuccessful", MyFontEnum.Red, dict.Key);
+                        }
                     }
                 }
             }
