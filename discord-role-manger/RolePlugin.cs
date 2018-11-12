@@ -150,8 +150,12 @@ namespace DiscordRoleManager
             string discordTag = GetDiscordTag(obj.SteamId).Result;
 
             if (discordTag != "")
-                UpdatePlayerRank(obj.SteamId, discordTag);
-            else 
+                Task.Run(() =>
+                {
+                    Thread.Sleep(10000);
+                    UpdatePlayerRank(obj.SteamId, discordTag);
+                });
+            else
                 _conecting.Add(obj.SteamId);
         }
 
