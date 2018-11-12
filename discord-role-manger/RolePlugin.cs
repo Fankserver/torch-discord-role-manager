@@ -74,11 +74,11 @@ namespace DiscordRoleManager
             else
                 Log.Warn("No session manager loaded!");
 
-            _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
+            _chatmanager = Torch.Managers.GetManager<ChatManagerServer>();
             if (_chatmanager == null)
                 Log.Warn("No chat manager loaded!");
 
-            _multibase = Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>();
+            _multibase = Torch.Managers.GetManager<IMultiplayerManagerBase>();
             if (_multibase == null)
                 Log.Warn("No join/leave manager loaded!");
         }
