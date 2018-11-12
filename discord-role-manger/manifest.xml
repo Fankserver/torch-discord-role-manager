@@ -3,5 +3,5 @@
   <Name>DiscordRoleManager</Name>
   <Guid>42a5841a-321b-435d-bbe6-6873f661fdf2</Guid>
   <Repository>Fankserver/torch-discord-role-manager</Repository>
-  <Version>v1.2.4</Version>
+  <Version>v1.2.5</Version>
 </PluginManifest>
