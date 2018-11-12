@@ -274,7 +274,7 @@ namespace DiscordRoleManager
             }
 
             var promotionLevel = MySession.Static.GetUserPromoteLevel(steamId);
-            Log.Debug($"{steamId} have roles:{string.Join(",", member.Roles)} and promoteLevel:{promotionLevel.ToString()}");
+            Log.Debug($"{steamId} have roles:{string.Join(",", member.Roles.Select((x) => $"{x.Name}({x.Id})"))} and promoteLevel:{promotionLevel.ToString()}");
 
             foreach (var role in member.Roles)
             {
