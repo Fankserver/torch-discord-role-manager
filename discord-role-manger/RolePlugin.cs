@@ -150,11 +150,7 @@ namespace DiscordRoleManager
             string discordTag = GetDiscordTag(obj.SteamId).Result;
 
             if (discordTag != "")
-                Task.Run(() =>
-                {
-                    Thread.Sleep(10000);
-                    UpdatePlayerRank(obj.SteamId, discordTag);
-                });
+                UpdatePlayerRank(obj.SteamId, discordTag);
             else
                 _conecting.Add(obj.SteamId);
         }
@@ -278,27 +274,45 @@ namespace DiscordRoleManager
             }
 
             var promotionLevel = MySession.Static.GetUserPromoteLevel(steamId);
+            Log.Debug($"{steamId} have roles:{string.Join(",", member.Roles)} and promoteLevel:{promotionLevel.ToString()}");
 
             foreach (var role in member.Roles)
             {
-                if (Config.Rank4 > 0 && role.Id == Config.Rank4 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Admin)
+                if (Config.Rank4 > 0 && role.Id == Config.Rank4)
                 {
-                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Admin);
+                    if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Admin)
+                    {
+                        Log.Info($"{steamId} set promotelevel to Admin");
+                        MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Admin);
+                    }
                 }
                 else if (Config.Rank3 > 0 && role.Id == Config.Rank3 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster)
                 {
-                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster);
+                    if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster)
+                    {
+                        Log.Info($"{steamId} set promotelevel to SpaceMaster");
+                        MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster);
+                    }
                 }
                 else if (Config.Rank2 > 0 && role.Id == Config.Rank2 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Moderator)
                 {
-                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Moderator);
+                    if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Moderator)
+                    {
+                        Log.Info($"{steamId} set promotelevel to Moderator");
+                        MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Moderator);
+                    }
                 }
                 else if (Config.Rank1 > 0 && role.Id == Config.Rank1 && promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Scripter)
                 {
-                    MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Scripter);
+                    if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Scripter)
+                    {
+                        Log.Info($"{steamId} set promotelevel to Scripter");
+                        MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Scripter);
+                    }
                 }
                 else if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.None)
                 {
+                    Log.Info($"{steamId} set promotelevel to None");
                     MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.None);
                 }
             }
