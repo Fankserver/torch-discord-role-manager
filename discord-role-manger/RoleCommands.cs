@@ -1,4 +1,5 @@
-﻿using Torch.Commands;
+﻿using Sandbox.Game.World;
+using Torch.Commands;
 using Torch.Commands.Permissions;
 using VRage.Game.ModAPI;
 
@@ -10,17 +11,28 @@ namespace DiscordRoleManager
 
         [Command("link")]
         [Permission(MyPromoteLevel.None)]
-        public void Link(ulong steamId = 0)
+        public void Link()
         {
-            if (steamId == 0 && Context?.Player?.SteamUserId > 0)
-                steamId = Context.Player.SteamUserId;
-            else
+            if (!(Context?.Player?.SteamUserId > 0))
             {
                 Context.Respond("Command can be used ingame only");
                 return;
             }
 
-            Plugin.CommandLink(Context, steamId);
+            Plugin.CommandLink(Context, Context.Player.SteamUserId);
+        }
+
+        [Command("hidelink")]
+        [Permission(MyPromoteLevel.SpaceMaster)]
+        public void HideLink()
+        {
+            if (!(Context?.Player?.SteamUserId > 0))
+            {
+                Context.Respond("Command can be used ingame only");
+                return;
+            }
+
+            MySession.Static.SetUserPromoteLevel(Context.Player.SteamUserId, VRage.Game.ModAPI.MyPromoteLevel.None);
         }
     }
 }
