@@ -309,6 +309,7 @@ namespace DiscordRoleManager
                     level = VRage.Game.ModAPI.MyPromoteLevel.Moderator;
                 else if (Config.Rank1 > 0 && role.Id == Config.Rank1 && level < VRage.Game.ModAPI.MyPromoteLevel.Scripter)
                     level = VRage.Game.ModAPI.MyPromoteLevel.Scripter;
+                Log.Debug($"{steamId} check role {role.Name} -> {level.ToString()}");
             }
             return Task.FromResult(level);
         }
@@ -318,27 +319,27 @@ namespace DiscordRoleManager
             var promotionLevel = MySession.Static.GetUserPromoteLevel(steamId);
             var newPromoteLevel = GetPromoteLevelByRoles(steamId, discordTag).Result;
 
-            if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Admin)
+            if (newPromoteLevel == VRage.Game.ModAPI.MyPromoteLevel.Admin && promotionLevel != newPromoteLevel)
             {
                 Log.Info($"{steamId} set promotelevel to Admin");
                 MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Admin);
             }
-            else if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster)
+            else if (newPromoteLevel == VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster && promotionLevel != newPromoteLevel)
             {
                 Log.Info($"{steamId} set promotelevel to SpaceMaster");
                 MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster);
             }
-            else if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Moderator)
+            else if (newPromoteLevel == VRage.Game.ModAPI.MyPromoteLevel.Moderator && promotionLevel != newPromoteLevel)
             {
                 Log.Info($"{steamId} set promotelevel to Moderator");
                 MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Moderator);
             }
-            else if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.Scripter)
+            else if (newPromoteLevel == VRage.Game.ModAPI.MyPromoteLevel.Scripter && promotionLevel != newPromoteLevel)
             {
                 Log.Info($"{steamId} set promotelevel to Scripter");
                 MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.Scripter);
             }
-            else if (promotionLevel != VRage.Game.ModAPI.MyPromoteLevel.None)
+            else if (newPromoteLevel == VRage.Game.ModAPI.MyPromoteLevel.None && promotionLevel != newPromoteLevel)
             {
                 Log.Info($"{steamId} set promotelevel to None");
                 MySession.Static.SetUserPromoteLevel(steamId, VRage.Game.ModAPI.MyPromoteLevel.None);
