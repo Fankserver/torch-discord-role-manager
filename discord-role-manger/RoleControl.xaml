@@ -7,8 +7,15 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 	<StackPanel>
-		<Label FontWeight="Bold" FontSize="16" Content="Discord:" />
+		<Label FontWeight="Bold" FontSize="16" Content="General:" />
+		<CheckBox Content="Notify to link" Margin="3" IsChecked="{Binding NotifyLinkable}" />
+		<StackPanel Orientation="Horizontal">
+			<TextBox Width="80" Text="{Binding InfoDelay}" ToolTip="Delay in milliseconds to wait until notification will be shown" Margin="3" />
+			<Label Content="Link notification delay"/>
+		</StackPanel>
+		<CheckBox Content="Allow rank > 0 to act as reserved member" Margin="3" IsChecked="{Binding EnableReserved}" />
 
+		<Label FontWeight="Bold" FontSize="16" Content="Discord:" />
 		<StackPanel Orientation="Horizontal" Visibility="{Binding TokenVisibleState}">
 			<TextBox Width="420" Text="{Binding BotToken}" ToolTip="You need to create a discord bot to get the token" Margin="3"/>
 			<Label Content="Discord Bot Token"/>
@@ -29,7 +36,6 @@
 		</Label>
 
 		<Label FontWeight="Bold" FontSize="16" Content="Storage API:" />
-
 		<StackPanel Orientation="Horizontal">
 			<TextBox Width="240" Text="{Binding APIURL}" ToolTip="URL of the API server which store the information" Margin="3" />
 			<Label Content="URL"/>
@@ -60,7 +66,6 @@
 			<TextBox Width="180" Text="{Binding Rank4}" ToolTip="Role ID to assign rank 4" Margin="3" />
 			<Label Content="Rank 4 (Administrator)"/>
 		</StackPanel>
-		<CheckBox Content="Notify to link" Margin="3" IsChecked="{Binding NotifyLinkable}" />
 
 		<Label Height="20">
 			<LineBreak/>

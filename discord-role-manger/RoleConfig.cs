@@ -4,6 +4,15 @@ namespace DiscordRoleManager
 {
     public class RoleConfig : ViewModel
     {
+        private bool _notifyLinkable = true;
+        public bool NotifyLinkable { get => _notifyLinkable; set => SetValue(ref _notifyLinkable, value); }
+
+        private int _infoDelay = 5000;
+        public int InfoDelay { get => _infoDelay; set => SetValue(ref _infoDelay, value); }
+
+        private bool _enableReserved = true;
+        public bool EnableReserved { get => _enableReserved; set => SetValue(ref _enableReserved, value); }
+
         private string _token = "";
         public string BotToken { get => _token; set => SetValue(ref _token, value); }
 
@@ -18,12 +27,6 @@ namespace DiscordRoleManager
 
         private string _apiPassword = "";
         public string APIPassword { get => _apiPassword; set => SetValue(ref _apiPassword, value); }
-
-        private bool _notifyLinkable = true;
-        public bool NotifyLinkable { get => _notifyLinkable; set => SetValue(ref _notifyLinkable, value); }
-
-        private int _infoDelay = 5000;
-        public int InfoDelay { get => _infoDelay; set => SetValue(ref _infoDelay, value); }
 
         private ulong _rank1 = 0;
         public ulong Rank1 { get => _rank1; set => SetValue(ref _rank1, value); }

@@ -84,6 +84,7 @@
     <Compile Include="RoleControl.xaml.cs">
       <DependentUpon>RoleControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="RoleEventHandler.cs" />
     <Compile Include="RolePlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
