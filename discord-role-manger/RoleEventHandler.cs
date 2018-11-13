@@ -1,4 +1,5 @@
 ﻿using NLog;
+using Sandbox.Engine.Multiplayer;
 using System;
 using System.Threading.Tasks;
 using Torch.API.Event;
@@ -15,6 +16,10 @@ namespace DiscordRoleManager
         public void ValidateAuthTicketEvent(ref ValidateAuthTicketEvent ev)
         {
             if (!RolePlugin.Instance.Config.EnableReserved)
+                return;
+
+            // ignore until server full
+            if (!(MyMultiplayer.Static.MemberLimit > 0 && MyMultiplayer.Static.MemberCount - 1 >= MyMultiplayer.Static.MemberLimit))
                 return;
 
             string discordTag = RolePlugin.Instance.GetDiscordTag(ev.SteamID).Result;

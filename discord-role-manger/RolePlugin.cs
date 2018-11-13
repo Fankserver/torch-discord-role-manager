@@ -1,4 +1,5 @@
 ﻿using DSharpPlus;
+using DSharpPlus.EventArgs;
 using NLog;
 using Sandbox;
 using Sandbox.Game.Entities;
@@ -36,14 +37,14 @@ namespace DiscordRoleManager
         private RoleControl _control;
         private TorchSessionManager _sessionManager;
         private ChatManagerServer _chatmanager;
-        private MultiplayerManagerDedicated _multibase;
+        private IMultiplayerManagerBase _multibase;
         private Persistent<RoleConfig> _config;
         private HashSet<ulong> _conecting = new HashSet<ulong>();
         private Dictionary<ulong, string> _linkIds = new Dictionary<ulong, string>();
         private static readonly HttpClient client = new HttpClient();
         public static RolePlugin Instance { get; private set; }
 
-        public readonly Logger Log = LogManager.GetCurrentClassLogger();
+        public static readonly Logger Log = LogManager.GetCurrentClassLogger();
 
         /// <inheritdoc />
         public UserControl GetControl() => _control ?? (_control = new RoleControl(this));
@@ -83,7 +84,30 @@ namespace DiscordRoleManager
             else
                 Log.Warn("No event manager loaded!");
 
+            ConnectDiscord();
+
             Instance = this;
+        }
+
+        private void ConnectDiscord()
+        {
+            if (_discord != null)
+                return;
+
+            if (Config.BotToken.Length == 0)
+                return;
+
+            _discord = new DiscordClient(new DiscordConfiguration
+            {
+                Token = Config.BotToken,
+                TokenType = TokenType.Bot
+            });
+            _discord.ConnectAsync();
+            _discord.MessageCreated += Discord_MessageCreated;
+            _discord.Ready += async e =>
+            {
+                Log.Debug("Connected discord");
+            };
         }
 
         private void SessionChanged(ITorchSession session, TorchSessionState state)
@@ -94,17 +118,11 @@ namespace DiscordRoleManager
             switch (state)
             {
                 case TorchSessionState.Loading:
+                    ConnectDiscord();
                     client.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", Config.APIPassword);
-
-                    _discord = new DiscordClient(new DiscordConfiguration
-                    {
-                        Token = Config.BotToken,
-                        TokenType = TokenType.Bot
-                    });
-                    _discord.ConnectAsync();
-                    _discord.MessageCreated += Discord_MessageCreated;
-
-                    _multibase = Torch.Managers.GetManager<MultiplayerManagerDedicated>();
+                    break;
+                case TorchSessionState.Loaded:
+                    _multibase = Torch.CurrentSession.Managers.GetManager<IMultiplayerManagerBase>();
                     if (_multibase != null)
                     {
                         _multibase.PlayerJoined += _multibase_PlayerJoined;
@@ -114,7 +132,7 @@ namespace DiscordRoleManager
                     else
                         Log.Warn("No join/leave manager loaded!");
 
-                    _chatmanager = Torch.Managers.GetManager<ChatManagerServer>();
+                    _chatmanager = Torch.CurrentSession.Managers.GetManager<ChatManagerServer>();
                     if (_chatmanager == null)
                         Log.Warn("No chat manager loaded!");
 
@@ -137,7 +155,7 @@ namespace DiscordRoleManager
 
                     break;
                 case TorchSessionState.Unloaded:
-                    Log.Warn("Discord role manager unloaded!");
+                    Log.Info("Discord role manager unloaded!");
 
                     break;
                 default:
