@@ -10,7 +10,7 @@ namespace DiscordRoleManager
         private int _infoDelay = 5000;
         public int InfoDelay { get => _infoDelay; set => SetValue(ref _infoDelay, value); }
 
-        private bool _enableReserved = true;
+        private bool _enableReserved = false;
         public bool EnableReserved { get => _enableReserved; set => SetValue(ref _enableReserved, value); }
 
         private string _token = "";
