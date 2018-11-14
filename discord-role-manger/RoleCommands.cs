@@ -32,7 +32,7 @@ namespace DiscordRoleManager
                 return;
             }
 
-            MySession.Static.SetUserPromoteLevel(Context.Player.SteamUserId, VRage.Game.ModAPI.MyPromoteLevel.None);
+            MySession.Static.SetUserPromoteLevel(Context.Player.SteamUserId, MyPromoteLevel.None);
         }
     }
 }

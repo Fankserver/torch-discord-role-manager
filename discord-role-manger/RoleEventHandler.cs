@@ -26,13 +26,19 @@ namespace DiscordRoleManager
             if (discordTag == "")
                 return;
 
-            var level = RolePlugin.Instance.GetPromoteLevelByRoles(ev.SteamID, discordTag).Result;
-            if (level == VRage.Game.ModAPI.MyPromoteLevel.None)
+            var member = RolePlugin.Instance.GetDiscordMember(discordTag).Result;
+            if (member == null)
                 return;
 
-            Log.Info($"Bypass {ev.SteamID} because of {level.ToString()}");
-
-            ev.FutureVerdict = Task.FromResult(JoinResult.OK);
+            foreach (var role in member.Roles)
+            {
+                if (RolePlugin.Instance.Config.ReservedRoleId.Contains(role.Id.ToString()))
+                {
+                    Log.Info($"Bypass {ev.SteamID} because of role {role.Name} ({role.Id})");
+                    ev.FutureVerdict = Task.FromResult(JoinResult.OK);
+                    break;
+                }
+            }
         }
     }
 }

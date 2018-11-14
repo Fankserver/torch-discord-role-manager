@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DiscordRoleManager"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="890" d:DesignWidth="800">
 	<StackPanel>
 		<Label FontWeight="Bold" FontSize="16" Content="General:" />
 		<CheckBox Content="Notify to link" Margin="3" IsChecked="{Binding NotifyLinkable}" />
@@ -13,7 +13,6 @@
 			<TextBox Width="80" Text="{Binding InfoDelay}" ToolTip="Delay in milliseconds to wait until notification will be shown" Margin="3" />
 			<Label Content="Link notification delay"/>
 		</StackPanel>
-		<CheckBox Content="Allow rank > 0 to act as reserved member" Margin="3" IsChecked="{Binding EnableReserved}" />
 
 		<Label FontWeight="Bold" FontSize="16" Content="Discord:" />
 		<StackPanel Orientation="Horizontal" Visibility="{Binding TokenVisibleState}">
@@ -51,20 +50,31 @@
 
 		<Label FontWeight="Bold" FontSize="16" Content="Ranks (higher will be used):" />
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Text="{Binding Rank1}" ToolTip="Role ID to assign rank 1" Margin="3" />
-			<Label Content="Rank 1 (Scripters)"/>
+			<TextBox Width="180" Height="60"  Text="{Binding Rank1}" ToolTip="Role ID to assign rank 1" Margin="3" />
+			<Label Content="Role ID Rank 1 (Scripters)"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Text="{Binding Rank2}" ToolTip="Role ID to assign rank 2" Margin="3" />
-			<Label Content="Rank 2 (Moderator)"/>
+			<TextBox Width="180" Height="60"  Text="{Binding Rank2}" ToolTip="Role ID to assign rank 2" Margin="3" />
+			<Label Content="Role ID Rank 2 (Moderator)"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Text="{Binding Rank3}" ToolTip="Role ID to assign rank 3" Margin="3" />
-			<Label Content="Rank 3 (Space master)"/>
+			<TextBox Width="180" Height="60"  Text="{Binding Rank3}" ToolTip="Role ID to assign rank 3" Margin="3" />
+			<Label Content="Role ID Rank 3 (Space master)"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Text="{Binding Rank4}" ToolTip="Role ID to assign rank 4" Margin="3" />
-			<Label Content="Rank 4 (Administrator)"/>
+			<TextBox Width="180" Height="60"  Text="{Binding Rank4}" ToolTip="Role ID to assign rank 4" Margin="3" />
+			<Label Content="Role ID Rank 4 (Administrator)"/>
+		</StackPanel>
+
+		<Label Height="20">
+			<LineBreak/>
+		</Label>
+
+		<Label FontWeight="Bold" FontSize="16" Content="Reserved slots" />
+		<CheckBox Content="Enable reserved slots" Margin="3" IsChecked="{Binding EnableReserved}" />
+		<StackPanel Orientation="Horizontal">
+			<TextBox Width="180" Height="60" Text="{Binding Rank4}" ToolTip="Role ID" Margin="3" />
+			<Label Content="Role ID"/>
 		</StackPanel>
 
 		<Label Height="20">

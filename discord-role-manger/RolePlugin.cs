@@ -1,5 +1,5 @@
 ﻿using DSharpPlus;
-using DSharpPlus.EventArgs;
+using DSharpPlus.Entities;
 using NLog;
 using Sandbox;
 using Sandbox.Game.Entities;
@@ -23,7 +23,6 @@ using Torch.API.Session;
 using Torch.Commands;
 using Torch.Event;
 using Torch.Managers.ChatManager;
-using Torch.Server.Managers;
 using Torch.Session;
 using VRage.Game;
 
@@ -283,7 +282,7 @@ namespace DiscordRoleManager
             return Task.FromResult(discordTag);
         }
 
-        internal Task<VRage.Game.ModAPI.MyPromoteLevel> GetPromoteLevelByRoles(ulong steamId, string discordTag)
+        internal Task<DiscordMember> GetDiscordMember(string discordTag)
         {
             string username = "";
             string discriminator = "";
@@ -294,20 +293,25 @@ namespace DiscordRoleManager
                 discriminator = discordTag.Substring(idx + 1);
             }
 
-            var member = _discord.Guilds.FirstOrDefault().Value.GetAllMembersAsync().Result.FirstOrDefault((x) => x.Username == username && x.Discriminator == discriminator);
+            return Task.FromResult(_discord?.Guilds.FirstOrDefault().Value.GetAllMembersAsync().Result?.FirstOrDefault((x) => x.Username == username && x.Discriminator == discriminator));
+        }
+
+        internal Task<VRage.Game.ModAPI.MyPromoteLevel> GetPromoteLevelByRoles(ulong steamId, string discordTag)
+        {
+            var member = GetDiscordMember(discordTag).Result;
             if (member == null)
                 return Task.FromResult(VRage.Game.ModAPI.MyPromoteLevel.None);
 
             VRage.Game.ModAPI.MyPromoteLevel level = VRage.Game.ModAPI.MyPromoteLevel.None;
             foreach (var role in member.Roles)
             {
-                if (Config.Rank4 > 0 && role.Id == Config.Rank4 && level < VRage.Game.ModAPI.MyPromoteLevel.Admin)
+                if (Config.Rank4.Contains(role.Id.ToString()) && level < VRage.Game.ModAPI.MyPromoteLevel.Admin)
                     level = VRage.Game.ModAPI.MyPromoteLevel.Admin;
-                else if (Config.Rank3 > 0 && role.Id == Config.Rank3 && level < VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster)
+                else if (Config.Rank3.Contains(role.Id.ToString()) && level < VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster)
                     level = VRage.Game.ModAPI.MyPromoteLevel.SpaceMaster;
-                else if (Config.Rank2 > 0 && role.Id == Config.Rank2 && level < VRage.Game.ModAPI.MyPromoteLevel.Moderator)
+                else if (Config.Rank2.Contains(role.Id.ToString()) && level < VRage.Game.ModAPI.MyPromoteLevel.Moderator)
                     level = VRage.Game.ModAPI.MyPromoteLevel.Moderator;
-                else if (Config.Rank1 > 0 && role.Id == Config.Rank1 && level < VRage.Game.ModAPI.MyPromoteLevel.Scripter)
+                else if (Config.Rank1.Contains(role.Id.ToString()) && level < VRage.Game.ModAPI.MyPromoteLevel.Scripter)
                     level = VRage.Game.ModAPI.MyPromoteLevel.Scripter;
                 Log.Debug($"{steamId} check role {role.Name} -> {level.ToString()}");
             }
