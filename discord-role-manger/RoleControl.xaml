@@ -50,19 +50,19 @@
 
 		<Label FontWeight="Bold" FontSize="16" Content="Ranks (higher will be used):" />
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Height="60"  Text="{Binding Rank1}" ToolTip="Role ID to assign rank 1" Margin="3" />
+			<TextBox Width="180" Height="60" AcceptsReturn="True" Text="{Binding Rank1}" ToolTip="Role ID to assign rank 1" Margin="3" />
 			<Label Content="Role ID Rank 1 (Scripters)"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Height="60"  Text="{Binding Rank2}" ToolTip="Role ID to assign rank 2" Margin="3" />
+			<TextBox Width="180" Height="60" AcceptsReturn="True" Text="{Binding Rank2}" ToolTip="Role ID to assign rank 2" Margin="3" />
 			<Label Content="Role ID Rank 2 (Moderator)"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Height="60"  Text="{Binding Rank3}" ToolTip="Role ID to assign rank 3" Margin="3" />
+			<TextBox Width="180" Height="60" AcceptsReturn="True" Text="{Binding Rank3}" ToolTip="Role ID to assign rank 3" Margin="3" />
 			<Label Content="Role ID Rank 3 (Space master)"/>
 		</StackPanel>
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Height="60"  Text="{Binding Rank4}" ToolTip="Role ID to assign rank 4" Margin="3" />
+			<TextBox Width="180" Height="60" AcceptsReturn="True" Text="{Binding Rank4}" ToolTip="Role ID to assign rank 4" Margin="3" />
 			<Label Content="Role ID Rank 4 (Administrator)"/>
 		</StackPanel>
 
@@ -73,7 +73,7 @@
 		<Label FontWeight="Bold" FontSize="16" Content="Reserved slots" />
 		<CheckBox Content="Enable reserved slots" Margin="3" IsChecked="{Binding EnableReserved}" />
 		<StackPanel Orientation="Horizontal">
-			<TextBox Width="180" Height="60" Text="{Binding Rank4}" ToolTip="Role ID" Margin="3" />
+			<TextBox Width="180" Height="60" AcceptsReturn="True" Text="{Binding Rank4}" ToolTip="Role ID" Margin="3" />
 			<Label Content="Role ID"/>
 		</StackPanel>
 
