@@ -40,7 +40,7 @@ namespace DiscordRoleManager
         private bool _enableReserved = false;
         public bool EnableReserved { get => _enableReserved; set => SetValue(ref _enableReserved, value); }
 
-        private string _reservedRoleId = "";
-        public string ReservedRoleId { get => _reservedRoleId; set => SetValue(ref _reservedRoleId, value); }
+        private string _reservedRoleIds = "";
+        public string ReservedRoleIds { get => _reservedRoleIds; set => SetValue(ref _reservedRoleIds, value); }
     }
 }

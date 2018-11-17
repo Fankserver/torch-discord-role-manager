@@ -32,7 +32,7 @@ namespace DiscordRoleManager
 
             foreach (var role in member.Roles)
             {
-                if (RolePlugin.Instance.Config.ReservedRoleId.Contains(role.Id.ToString()))
+                if (RolePlugin.Instance.Config.ReservedRoleIds.Contains(role.Id.ToString()))
                 {
                     Log.Info($"Bypass {ev.SteamID} because of role {role.Name} ({role.Id})");
                     ev.FutureVerdict = Task.FromResult(JoinResult.OK);
