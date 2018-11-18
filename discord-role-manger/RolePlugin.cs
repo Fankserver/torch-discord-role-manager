@@ -234,9 +234,10 @@ namespace DiscordRoleManager
 
             if (Config.ChannelId > 0 && e.Channel.Id.Equals(Config.ChannelId))
             {
+                var message = e.Message.Content.ToUpper();
                 foreach (var dict in _linkIds)
                 {
-                    if (dict.Value == e.Message.Content)
+                    if (dict.Value == message)
                     {
                         Log.Info($"Linked steamid:{dict.Key} with discord:{e.Author.Username}#{e.Author.Discriminator}");
 
@@ -245,12 +246,14 @@ namespace DiscordRoleManager
 
                             _linkIds.Remove(dict.Key);
                             _chatmanager.SendMessageAsOther("DiscordRoleManager", "Link successful", MyFontEnum.White, dict.Key);
+                            e.Message.CreateReactionAsync(DiscordEmoji.FromName(_discord, ":heavy_check_mark:"));
 
                             return UpdatePlayerRank(dict.Key, $"{e.Author.Username}#{e.Author.Discriminator}");
                         }
                         else
                         {
                             _chatmanager.SendMessageAsOther("DiscordRoleManager", "Link unsuccessful", MyFontEnum.Red, dict.Key);
+                            e.Message.CreateReactionAsync(DiscordEmoji.FromName(_discord, ":heavy_multiplication_x:"));
                         }
                     }
                 }
